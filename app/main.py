@@ -2,9 +2,11 @@ from typing import List  # Add this import statement
 
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app import controller, schemas, database
+from app import controller, schemas, database, auth
 
 app = FastAPI()
+
+app.include_router(auth.router)
 
 @app.get("/")
 def read_root():
