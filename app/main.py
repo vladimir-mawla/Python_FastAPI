@@ -1,12 +1,19 @@
+from typing import List  # Add this import statement
+
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from . import controller, schemas, database
+from app import controller, schemas, database
 
 app = FastAPI()
 
 @app.get("/")
 def read_root():
     return {"message": "Hello, World!"}
+
+@app.get("/users/", response_model=List[schemas.User])
+def get_users(db: Session = Depends(database.get_db)):
+    users = controller.get_users(db)
+    return users
 
 @app.post("/users/", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
