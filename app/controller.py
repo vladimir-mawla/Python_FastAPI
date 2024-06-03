@@ -6,6 +6,7 @@ from fastapi import HTTPException, status
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def authenticate_user(db: Session, username: str, password: str):
+    """Authenticate user."""
     user = get_user_by_username(db, username)
     if not user or not verify_password(password, user.hashed_password):
         raise HTTPException(
@@ -16,18 +17,23 @@ def authenticate_user(db: Session, username: str, password: str):
     return user
 
 def verify_password(plain_password: str, hashed_password: str):
+    """Verify password."""
     return pwd_context.verify(plain_password, hashed_password)
 
 def get_user_by_username(db: Session, username: str):
+    """Get user by username."""
     return db.query(models.User).filter(models.User.username == username).first()
 
 def get_users(db: Session):
+    """Get all users."""
     return db.query(models.User)
 
 def get_user_by_email(db: Session, email: str):
+    """Get user by email."""
     return db.query(models.User).filter(models.User.email == email).first()
 
 def create_user(db: Session, user: schemas.UserCreate):
+    """Create a new user."""
     hashed_password = pwd_context.hash(user.password)
     db_user = models.User(username=user.username, email=user.email, hashed_password=hashed_password)
     db.add(db_user)

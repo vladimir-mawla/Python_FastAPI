@@ -16,6 +16,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def create_access_token(data: dict, expires_delta: timedelta):
+    """Create an access token."""
+
     to_encode = data.copy()
     expire = datetime.utcnow() + expires_delta
     to_encode.update({"exp": expire})
@@ -23,6 +25,8 @@ def create_access_token(data: dict, expires_delta: timedelta):
     return encoded_jwt
 
 def verify_token(token: str = Depends(oauth2_scheme)):
+    """Verify JWT token."""
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -39,6 +43,8 @@ def verify_token(token: str = Depends(oauth2_scheme)):
 
 
 def get_current_user(username: str = Depends(verify_token), db: Session = Depends(database.get_db)):
+    """Get current user."""
+
     user = controller.get_user_by_username(db, username=username)
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
@@ -48,12 +54,16 @@ from fastapi import APIRouter
 
 router = APIRouter()
 
-@router.get("/protected")
+@router.get("/protected", summary="Testing Protected route", tags=["Authentication"])
 async def protected_route(user: schemas.User = Depends(get_current_user)):
+    """Testing authentication."""
+
     return {"message": f"JWT Authentication works fine, {user.username}!"}
 
-@router.post("/token")
+@router.post("/token", summary="Aquiring acces token", tags=["Authentication"])
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
+    """Aquiring acces token."""
+
     user = controller.authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -67,6 +77,8 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-@router.get("/profile")
+@router.get("/profile", summary="Getting authenticated users profile", tags=["Authentication"])
 async def get_user_profile(current_user: schemas.User = Depends(get_current_user)):
+    """Getting authenticated users profile."""
+
     return current_user
