@@ -36,3 +36,10 @@ def verify_token(token: str = Depends(oauth2_scheme)):
     except PyJWTError:
         raise credentials_exception
     return username
+
+
+def get_current_user(username: str = Depends(verify_token), db: Session = Depends(database.get_db)):
+    user = controller.get_user_by_username(db, username=username)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+    return user
